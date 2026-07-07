@@ -1,1 +1,21 @@
+# --- 环境变量 ---
 .env
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+
+# --- 运行期数据 ---
+data/memory.db
+data/vad_models/
+logfile/
+*.log
+
+# --- IDE ---
+.vscode/
+.idea/
+
+# --- 系统 ---
+Thumbs.db
+.DS_Store
