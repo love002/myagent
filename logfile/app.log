@@ -952,3 +952,42 @@
 2026-07-07 19:02:16 - web_app.py        :0207 - INFO     - Voice pipeline stopped
 2026-07-07 19:02:54 - web_app.py        :0207 - INFO     - Voice pipeline stopped
 2026-07-07 19:02:54 - web_app.py        :0236 - INFO     - Web server stopped
+2026-07-07 19:24:41 - llms.py           :0094 - INFO     - 初始化 Chat 模型: deepseek (deepseek-chat)
+2026-07-07 19:24:42 - memory_sqlite.py  :0035 - INFO     - 初始化 SQLiteSaver，数据库路径: data/memory.db
+2026-07-07 19:24:42 - tool.py           :0078 - DEBUG    - 获取并提供的工具列表: [StructuredTool(name='sql_agent', description="用于查询数据库中的业务数据。\n    适用场景：\n    - 询问用户数量、列表、详细信息（如：'有多少用户？', '显示所有北京的用户'）。\n    - 询问产品信息、价格、库存（如：'最贵的产品是什么？', '笔记本电脑还有货吗？'）。\n    - 任何需要从数据库中检索具体记录或统计数字的问题。\n    \n    注意：直接传入用户的自然语言问题，不需要生成 SQL。", args_schema=<class 'langchain_core.utils.pydantic.sql_agent'>, func=<function get_tools.<locals>.sql_agent at 0x000002202FB7A8C0>)] 
+2026-07-07 19:24:42 - web_app.py        :0232 - INFO     - Web server started at http://localhost:8000
+2026-07-07 19:25:13 - web_app.py        :0196 - ERROR    - Failed to start pipeline: Remote end closed connection without response
+2026-07-07 19:25:32 - web_app.py        :0194 - INFO     - Voice pipeline started
+2026-07-07 19:25:41 - asr.py            :0114 - DEBUG    - [ASR] 监听已暂停，音频流保持开启。
+2026-07-07 19:25:49 - asr.py            :0122 - DEBUG    - [ASR] 监听已恢复。
+2026-07-07 19:25:49 - asr.py            :0135 - DEBUG    - [ASR] 已清空暂停期间的积压音频数据。
+2026-07-07 19:26:01 - web_app.py        :0207 - INFO     - Voice pipeline stopped
+2026-07-07 19:26:01 - web_app.py        :0236 - INFO     - Web server stopped
+2026-07-07 19:29:42 - llms.py           :0094 - INFO     - 初始化 Chat 模型: deepseek (deepseek-chat)
+2026-07-07 19:29:42 - memory_sqlite.py  :0035 - INFO     - 初始化 SQLiteSaver，数据库路径: data/memory.db
+2026-07-07 19:29:42 - tool.py           :0078 - DEBUG    - 获取并提供的工具列表: [StructuredTool(name='sql_agent', description="用于查询数据库中的业务数据。\n    适用场景：\n    - 询问用户数量、列表、详细信息（如：'有多少用户？', '显示所有北京的用户'）。\n    - 询问产品信息、价格、库存（如：'最贵的产品是什么？', '笔记本电脑还有货吗？'）。\n    - 任何需要从数据库中检索具体记录或统计数字的问题。\n    \n    注意：直接传入用户的自然语言问题，不需要生成 SQL。", args_schema=<class 'langchain_core.utils.pydantic.sql_agent'>, func=<function get_tools.<locals>.sql_agent at 0x0000021CAAA7F400>)] 
+2026-07-07 19:29:42 - web_app.py        :0232 - INFO     - Web server started at http://localhost:8000
+2026-07-07 19:29:49 - web_app.py        :0196 - ERROR    - Failed to start pipeline: cannot unpack non-iterable NoneType object
+2026-07-07 19:30:10 - web_app.py        :0207 - INFO     - Voice pipeline stopped
+2026-07-07 19:30:10 - web_app.py        :0236 - INFO     - Web server stopped
+2026-07-07 19:30:17 - llms.py           :0094 - INFO     - 初始化 Chat 模型: deepseek (deepseek-chat)
+2026-07-07 19:30:18 - memory_sqlite.py  :0035 - INFO     - 初始化 SQLiteSaver，数据库路径: data/memory.db
+2026-07-07 19:30:18 - tool.py           :0078 - DEBUG    - 获取并提供的工具列表: [StructuredTool(name='sql_agent', description="用于查询数据库中的业务数据。\n    适用场景：\n    - 询问用户数量、列表、详细信息（如：'有多少用户？', '显示所有北京的用户'）。\n    - 询问产品信息、价格、库存（如：'最贵的产品是什么？', '笔记本电脑还有货吗？'）。\n    - 任何需要从数据库中检索具体记录或统计数字的问题。\n    \n    注意：直接传入用户的自然语言问题，不需要生成 SQL。", args_schema=<class 'langchain_core.utils.pydantic.sql_agent'>, func=<function get_tools.<locals>.sql_agent at 0x000002B2BA8C3490>)] 
+2026-07-07 19:30:18 - web_app.py        :0232 - INFO     - Web server started at http://localhost:8000
+2026-07-07 19:30:30 - web_app.py        :0196 - ERROR    - Failed to start pipeline: cannot unpack non-iterable NoneType object
+2026-07-07 19:32:21 - web_app.py        :0207 - INFO     - Voice pipeline stopped
+2026-07-07 19:32:21 - web_app.py        :0236 - INFO     - Web server stopped
+2026-07-07 19:32:29 - llms.py           :0094 - INFO     - 初始化 Chat 模型: deepseek (deepseek-chat)
+2026-07-07 19:32:29 - memory_sqlite.py  :0035 - INFO     - 初始化 SQLiteSaver，数据库路径: data/memory.db
+2026-07-07 19:32:29 - tool.py           :0078 - DEBUG    - 获取并提供的工具列表: [StructuredTool(name='sql_agent', description="用于查询数据库中的业务数据。\n    适用场景：\n    - 询问用户数量、列表、详细信息（如：'有多少用户？', '显示所有北京的用户'）。\n    - 询问产品信息、价格、库存（如：'最贵的产品是什么？', '笔记本电脑还有货吗？'）。\n    - 任何需要从数据库中检索具体记录或统计数字的问题。\n    \n    注意：直接传入用户的自然语言问题，不需要生成 SQL。", args_schema=<class 'langchain_core.utils.pydantic.sql_agent'>, func=<function get_tools.<locals>.sql_agent at 0x00000251E81732E0>)] 
+2026-07-07 19:32:29 - web_app.py        :0232 - INFO     - Web server started at http://localhost:8000
+2026-07-07 19:32:34 - web_app.py        :0194 - INFO     - Voice pipeline started
+2026-07-07 19:32:45 - asr.py            :0220 - DEBUG    - [ASR] 监听已暂停，音频流保持开启。
+2026-07-07 19:32:54 - asr.py            :0228 - DEBUG    - [ASR] 监听已恢复。
+2026-07-07 19:32:54 - asr.py            :0241 - DEBUG    - [ASR] 已清空暂停期间的积压音频数据。
+2026-07-07 19:32:57 - asr.py            :0220 - DEBUG    - [ASR] 监听已暂停，音频流保持开启。
+2026-07-07 19:33:07 - asr.py            :0228 - DEBUG    - [ASR] 监听已恢复。
+2026-07-07 19:33:07 - asr.py            :0241 - DEBUG    - [ASR] 已清空暂停期间的积压音频数据。
+2026-07-07 19:33:10 - web_app.py        :0207 - INFO     - Voice pipeline stopped
+2026-07-07 19:33:21 - web_app.py        :0207 - INFO     - Voice pipeline stopped
+2026-07-07 19:33:21 - web_app.py        :0236 - INFO     - Web server stopped

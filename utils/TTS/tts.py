@@ -17,6 +17,7 @@ import websockets
 import pyaudio
 import subprocess
 import queue
+from dotenv import load_dotenv
 from .protocols import (
     EventType,
     MsgType,
@@ -29,16 +30,24 @@ from .protocols import (
     wait_for_event,
 )
 
-# ================= 配置区域 (硬编码输入) =================
+# 加载环境变量
+load_dotenv()
+
+# ================= 配置 (优先读取环境变量，回退到默认值) =================
 CONFIG = {
-    "APP_ID": "7474732800",          #  App ID
-    "ACCESS_TOKEN": "hxl7jXIJw7_BSD9FCur07oZYvqhRvHHT", # Access Token
-    "VOICE_TYPE": "zh_female_sajiaonvyou_moon_bigtts", # 音色
-    "OUTPUT_FORMAT": "mp3",                # 输出格式: mp3, wav, ogg
-    "SAMPLE_RATE": 24000,                  # 采样率
-    "ENDPOINT": "wss://openspeech.bytedance.com/api/v3/tts/bidirection",
-    "SPEED": 2, 
+    "APP_ID": os.getenv("TTS_APP_ID"),
+    "ACCESS_TOKEN": os.getenv("TTS_ACCESS_TOKEN"),
+    "VOICE_TYPE": os.getenv("TTS_VOICE_TYPE", "zh_female_sajiaonvyou_moon_bigtts"),
+    "OUTPUT_FORMAT": os.getenv("TTS_OUTPUT_FORMAT", "mp3"),
+    "SAMPLE_RATE": int(os.getenv("TTS_SAMPLE_RATE", "24000")),
+    "ENDPOINT": os.getenv("TTS_ENDPOINT", "wss://openspeech.bytedance.com/api/v3/tts/bidirection"),
+    "SPEED": int(os.getenv("TTS_SPEED", "2")),
 }
+
+# 启动时检查必要凭证
+missing = [k for k in ("APP_ID", "ACCESS_TOKEN") if not CONFIG[k]]
+if missing:
+    logger.warning(f"TTS 配置缺失: {missing}，请在 .env 中设置 TTS_APP_ID 和 TTS_ACCESS_TOKEN")
 
 # 日志配置
 logging.basicConfig(
@@ -387,8 +396,8 @@ async def mock_llm_generator():
 async def run_test():
     print("--- 开始测试 LLM TTS 流式模块 (FFmpeg版 + 优化) ---")
     
-    if CONFIG["APP_ID"] == "YOUR_APP_ID_HERE":
-        print("错误：请先在代码顶部硬编码配置您的 APP_ID 和 ACCESS_TOKEN！")
+    if not CONFIG["APP_ID"] or not CONFIG["ACCESS_TOKEN"]:
+        print("错误：请在 .env 文件中设置 TTS_APP_ID 和 TTS_ACCESS_TOKEN！")
         return
 
     output_filename = f"test_output_optimized.{CONFIG['OUTPUT_FORMAT']}"

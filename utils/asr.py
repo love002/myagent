@@ -7,6 +7,7 @@ import os
 import time
 import threading
 import queue
+import urllib.request
 import numpy as np
 import torch
 import sounddevice as sd
@@ -16,33 +17,138 @@ from utils.logger import LoggerManager
 
 logger = LoggerManager.get_logger()
 
+# --- VAD 模型本地缓存路径 ---
+_CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+_PROJECT_DIR = os.path.dirname(_CURRENT_DIR)
+VAD_CACHE_DIR = os.path.join(_PROJECT_DIR, "data", "vad_models")
+os.makedirs(VAD_CACHE_DIR, exist_ok=True)
+
+# Silero VAD 官方 ONNX 模型下载地址 (约 15MB)
+SILERO_VAD_ONNX_URL = (
+    "https://github.com/snakers4/silero-vad/raw/master/files/silero_vad.onnx"
+)
+SILERO_VAD_ONNX_PATH = os.path.join(VAD_CACHE_DIR, "silero_vad.onnx")
+
+
+def _download_file(url: str, dest: str) -> None:
+    """下载文件到本地，支持超时和重定向。"""
+    print(f"  下载中: {url}")
+    try:
+        urllib.request.urlretrieve(url, dest)
+        size_mb = os.path.getsize(dest) / (1024 * 1024)
+        print(f"  完成 ({size_mb:.1f} MB) -> {dest}")
+    except Exception as e:
+        # 清理残留文件
+        if os.path.exists(dest):
+            os.remove(dest)
+        raise RuntimeError(f"下载失败: {e}")
+
+
+def _make_onnx_wrapper(sess) -> "ONNXVADWrapper":
+    """创建兼容 PyTorch VAD 调用的 ONNX 包装器。"""
+    class ONNXVADWrapper:
+        def __call__(self, audio_tensor, sr: int):
+            audio_np = audio_tensor.cpu().numpy() if torch.is_tensor(audio_tensor) else audio_tensor
+            if audio_np.ndim == 1:
+                audio_np = audio_np[np.newaxis, :]
+            inp = {sess.get_inputs()[0].name: audio_np,
+                   sess.get_inputs()[1].name: np.array([sr], dtype=np.int64)}
+            out = sess.run(None, inp)
+            return torch.tensor(out[0])
+        def to(self, _device):
+            return self
+        def eval(self):
+            return self
+        def reset_states(self):
+            pass
+    return ONNXVADWrapper()
+
+
+def _onnx_available() -> bool:
+    """检查 onnxruntime 是否可用。"""
+    try:
+        import onnxruntime
+        return True
+    except ImportError:
+        return False
+
+
+def _load_vad_model_local(device: torch.device):
+    """从本地缓存加载 VAD 模型，若不存在则下载后再加载。
+
+    优先使用 ONNX 格式 (加载快，~15MB)，回退到原始 torch.hub 方式。
+    """
+    # 尝试本地缓存的 ONNX 模型
+    if os.path.exists(SILERO_VAD_ONNX_PATH) and _onnx_available():
+        print(f"  从本地加载 VAD 模型 (ONNX): {SILERO_VAD_ONNX_PATH}")
+        try:
+            import onnxruntime
+            opts = onnxruntime.SessionOptions()
+            opts.log_severity_level = 3
+            sess = onnxruntime.InferenceSession(
+                SILERO_VAD_ONNX_PATH, opts,
+                providers=["CUDAExecutionProvider", "CPUExecutionProvider"],
+            )
+            print("  VAD 模型加载成功 (ONNX)")
+            return _make_onnx_wrapper(sess)
+        except Exception as e:
+            print(f"  ONNX 加载失败 ({e})，尝试重新下载...")
+            os.remove(SILERO_VAD_ONNX_PATH)
+
+    # 首次运行或缓存失效: 尝试下载 ONNX 模型
+    if not os.path.exists(SILERO_VAD_ONNX_PATH) and _onnx_available():
+        print("  首次运行，下载 VAD 模型到本地缓存...")
+        try:
+            _download_file(SILERO_VAD_ONNX_URL, SILERO_VAD_ONNX_PATH)
+            import onnxruntime
+            sess = onnxruntime.InferenceSession(SILERO_VAD_ONNX_PATH)
+            print("  VAD 模型加载成功 (ONNX)")
+            return _make_onnx_wrapper(sess)
+        except Exception as e:
+            print(f"  ONNX 下载/加载失败: {e}")
+            if os.path.exists(SILERO_VAD_ONNX_PATH):
+                os.remove(SILERO_VAD_ONNX_PATH)
+
+    if not _onnx_available():
+        print("  onnxruntime 未安装，使用 torch.hub 原生加载 (首次需下载 ~95MB)")
+
+    # 兜底: 返回 None，由调用者使用 torch.hub.load
+    return None
+
+
 class RealTimeASR:
     def __init__(self, on_recognized_callback=None):
         # 回调函数
-        self.on_recognized_callback = on_recognized_callback 
+        self.on_recognized_callback = on_recognized_callback
 
         # 初始化 FunASR 模型
         self.asr_model = AutoModel(
-            model="iic/SenseVoiceSmall", 
+            model="iic/SenseVoiceSmall",
             device="cuda:0" if torch.cuda.is_available() else "cpu",
             quantize=True,
             disable_update=True,
             trust_remote_code=True,
         )
-        
-        # 初始化 VAD 模型
-        print("正在加载 VAD 模型 (Silero)...")
-        self.vad_model, utils = torch.hub.load(
-            repo_or_dir='snakers4/silero-vad',
-            model='silero_vad',
-            force_reload=False,
-            onnx=False
-        )
 
-        self.get_speech_ts = utils[0]
-        
         # 设备一致性
         self.device = next(self.asr_model.model.parameters()).device
+
+        # 初始化 VAD 模型 (带本地缓存)
+        print("正在加载 VAD 模型 (Silero)...")
+        self.vad_model = _load_vad_model_local(self.device)
+        if self.vad_model is None:
+            # 兜底: 使用 torch.hub
+            print("  使用 torch.hub 加载 (首次可能需要下载)...")
+            self.vad_model, utils = torch.hub.load(
+                repo_or_dir='snakers4/silero-vad',
+                model='silero_vad',
+                force_reload=False,
+                onnx=False,
+            )
+            self.get_speech_ts = utils[0]
+        else:
+            self.get_speech_ts = None  # ONNX 模式不使用
+
         self.vad_model.to(self.device)
         self.vad_model.eval()
 
