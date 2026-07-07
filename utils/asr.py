@@ -23,9 +23,13 @@ _PROJECT_DIR = os.path.dirname(_CURRENT_DIR)
 VAD_CACHE_DIR = os.path.join(_PROJECT_DIR, "data", "vad_models")
 os.makedirs(VAD_CACHE_DIR, exist_ok=True)
 
-# Silero VAD 官方 ONNX 模型下载地址 (约 15MB)
+# Silero VAD 官方 ONNX 模型下载地址 (约 2MB)
 SILERO_VAD_ONNX_URL = (
-    "https://github.com/snakers4/silero-vad/raw/master/files/silero_vad.onnx"
+    "https://github.com/snakers4/silero-vad/raw/master/src/silero_vad/data/silero_vad.onnx"
+)
+# 备用镜像（Hugging Face，国内可能更快）
+SILERO_VAD_ONNX_MIRROR_URL = (
+    "https://huggingface.co/runanywhere/silero-vad-v5/resolve/main/silero_vad.onnx"
 )
 SILERO_VAD_ONNX_PATH = os.path.join(VAD_CACHE_DIR, "silero_vad.onnx")
 
@@ -76,7 +80,7 @@ def _onnx_available() -> bool:
 def _load_vad_model_local(device: torch.device):
     """从本地缓存加载 VAD 模型，若不存在则下载后再加载。
 
-    优先使用 ONNX 格式 (加载快，~15MB)，回退到原始 torch.hub 方式。
+    优先使用 ONNX 格式 (加载快，~2MB)，回退到原始 torch.hub 方式。
     """
     # 尝试本地缓存的 ONNX 模型
     if os.path.exists(SILERO_VAD_ONNX_PATH) and _onnx_available():
@@ -97,17 +101,31 @@ def _load_vad_model_local(device: torch.device):
 
     # 首次运行或缓存失效: 尝试下载 ONNX 模型
     if not os.path.exists(SILERO_VAD_ONNX_PATH) and _onnx_available():
-        print("  首次运行，下载 VAD 模型到本地缓存...")
-        try:
-            _download_file(SILERO_VAD_ONNX_URL, SILERO_VAD_ONNX_PATH)
-            import onnxruntime
-            sess = onnxruntime.InferenceSession(SILERO_VAD_ONNX_PATH)
-            print("  VAD 模型加载成功 (ONNX)")
-            return _make_onnx_wrapper(sess)
-        except Exception as e:
-            print(f"  ONNX 下载/加载失败: {e}")
-            if os.path.exists(SILERO_VAD_ONNX_PATH):
-                os.remove(SILERO_VAD_ONNX_PATH)
+        print("  首次运行，下载 VAD 模型到本地缓存 (~2MB)...")
+        downloaded = False
+        for url in [SILERO_VAD_ONNX_URL, SILERO_VAD_ONNX_MIRROR_URL]:
+            try:
+                _download_file(url, SILERO_VAD_ONNX_PATH)
+                downloaded = True
+                break
+            except Exception as e:
+                print(f"  从 {url} 下载失败: {e}")
+                if os.path.exists(SILERO_VAD_ONNX_PATH):
+                    os.remove(SILERO_VAD_ONNX_PATH)
+
+        if downloaded:
+            try:
+                import onnxruntime
+                sess = onnxruntime.InferenceSession(SILERO_VAD_ONNX_PATH)
+                print("  VAD 模型加载成功 (ONNX)")
+                return _make_onnx_wrapper(sess)
+            except Exception as e:
+                print(f"  ONNX 加载失败: {e}")
+                if os.path.exists(SILERO_VAD_ONNX_PATH):
+                    os.remove(SILERO_VAD_ONNX_PATH)
+        else:
+            # 所有 URL 都失败，走 torch.hub 兜底
+            print("  所有下载地址均失败，将使用 torch.hub 兜底。")
 
     if not _onnx_available():
         print("  onnxruntime 未安装，使用 torch.hub 原生加载 (首次需下载 ~95MB)")

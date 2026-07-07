@@ -34,9 +34,8 @@ MODEL_CONFIGS = {
     # 兼容 OpenAI 协议
     "qwen": {
         "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-        # 建议：实际项目中 API Key 最好从环境变量或 Config 类读取，这里作为默认 fallback
         "api_key_env_name": "DASHSCOPE_API_KEY", 
-        "chat_model": "qwen3.5-plus",
+        "chat_model": "qwen3.7-plus",
         "embedding_model": "text-embedding-v4" 
     },
     "deepseek": {
