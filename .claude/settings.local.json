@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/01_Work/self_learn/AI_CRM/utils/**)"
+    ]
+  }
+}

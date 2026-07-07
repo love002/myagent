@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Voice Assistant</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div id="app">
+    <!-- Header -->
+    <header>
+        <div class="header-left">
+            <span class="logo">🎙️</span>
+            <h1>Voice Assistant</h1>
+        </div>
+        <div class="header-right">
+            <span class="status-dot" id="statusDot"></span>
+            <span class="status-text" id="statusText">stopped</span>
+        </div>
+    </header>
+
+    <!-- Chat area -->
+    <main id="chatArea">
+        <div class="welcome" id="welcome">
+            <div class="welcome-icon">🎙️</div>
+            <h2>实时语音助手已就绪</h2>
+            <p>点击 <strong>启动</strong> 开始语音对话，或直接在下方输入文字</p>
+        </div>
+    </main>
+
+    <!-- Emotion indicator -->
+    <div class="emotion-bar" id="emotionBar" style="display:none;">
+        <span class="emotion-label">情感</span>
+        <span class="emotion-emoji" id="emotionEmoji">😊</span>
+    </div>
+
+    <!-- ASR live bar -->
+    <div class="asr-bar" id="asrBar">
+        <span class="asr-icon">🎤</span>
+        <span class="asr-text" id="asrText">等待开始...</span>
+        <span class="asr-wave" id="asrWave"></span>
+    </div>
+
+    <!-- Input bar -->
+    <div class="input-bar">
+        <input type="text" id="textInput" placeholder="输入文字消息..." autocomplete="off">
+        <button id="sendBtn" class="btn btn-send" disabled>发送</button>
+        <button id="toggleBtn" class="btn btn-start">▶ 启动</button>
+    </div>
+</div>
+
+<!-- Message template (hidden) -->
+<template id="msgTemplateUser">
+    <div class="message user">
+        <div class="msg-avatar">👤</div>
+        <div class="msg-content">
+            <div class="msg-bubble"></div>
+        </div>
+    </div>
+</template>
+
+<template id="msgTemplateAI">
+    <div class="message ai">
+        <div class="msg-avatar">🤖</div>
+        <div class="msg-content">
+            <div class="msg-bubble"></div>
+        </div>
+    </div>
+</template>
+
+<!-- Typing indicator template -->
+<template id="typingTemplate">
+    <div class="message ai typing-indicator" id="typingIndicator">
+        <div class="msg-avatar">🤖</div>
+        <div class="msg-content">
+            <div class="msg-bubble">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script src="/js/app.js"></script>
+</body>
+</html>
